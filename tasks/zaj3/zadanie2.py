@@ -36,25 +36,18 @@ def merge(path1, path2, out_file):
 
         it = iter(hmerge(reader1, reader2))
         current = next(it)
-        collapsed = False
 
         while True:
             try:
                 nxt = next(it)
                 if current[0] == nxt[0]:
                     current[1] = int(current[1]) + int(nxt[1])
-                    #nxt = current
-                    collapsed = True
+                    nxt = current
                 else:
                     reader_out.writerow(current)
                     current = nxt
-                    collapsed = False
             except StopIteration:
-                if collapsed:
-                    reader_out.writerow(current)
-                else:
-                    reader_out.writerow(nxt)
-
+                reader_out.writerow(nxt)
                 break
 
 
