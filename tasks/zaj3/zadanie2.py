@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import csv
+from heapq import merge as hmerge
+
 
 def merge(path1, path2, out_file):
     """
@@ -25,6 +28,35 @@ def merge(path1, path2, out_file):
     Najlepsza implementacja nie wymaga ma złożoność pamięciową ``O(1)``.
     Podpowiedź: merge sort. Nie jest to trywialne zadanie, ale jest do zrobienia.
     """
+
+    with open(path1, 'r', encoding='utf-8') as file1, open(path2, 'r', encoding='utf-8') as file2, open(out_file, 'w', encoding='utf-8') as output:
+        reader1 = csv.reader(file1, dialect=csv.unix_dialect)
+        reader2 = csv.reader(file2, dialect=csv.unix_dialect)
+        reader_out = csv.writer(output, dialect=csv.unix_dialect)
+
+        it = iter(hmerge(reader1, reader2))
+        current = next(it)
+        collapsed = False
+
+        while True:
+            try:
+                nxt = next(it)
+                if current[0] == nxt[0]:
+                    current[1] = int(current[1]) + int(nxt[1])
+                    #nxt = current
+                    collapsed = True
+                else:
+                    reader_out.writerow(current)
+                    current = nxt
+                    collapsed = False
+            except StopIteration:
+                if collapsed:
+                    reader_out.writerow(current)
+                else:
+                    reader_out.writerow(nxt)
+
+                break
+
 
 if __name__ == '__main__':
 
