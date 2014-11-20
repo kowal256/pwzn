@@ -93,22 +93,11 @@ def generate_ngrams(contents, ngram_len=7):
     :return: Funkcja zwraca słownik n-gram -> ilość wystąpień
     """
 
-    # Why article same article titles should be collapsed to one?
-
-    def _count(data):
-        for x in range(len(data)-ngram_len+1):
-            c[data[x:x+ngram_len]] += 1
-
     c = Counter()
-    titles = set()
 
     for article in contents:
-        print(article)
-        if article[0] not in titles:
-            print(article[0])
-            #_count(article[0])
-            titles.add(article[0])
-        _count(article[1])
+        for x in range(len(article[1])-ngram_len+1):
+            c[article[1][x:x+ngram_len]] += 1
 
     return c
 
