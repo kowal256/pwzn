@@ -14,6 +14,7 @@ def linear_func(x, a, b):
     :param float a:
     :param float b:
     """
+    return a*x + b
 
 
 def chisquared(xy, a, b):
@@ -35,6 +36,7 @@ def chisquared(xy, a, b):
     :param float b:
     :return:
     """
+    return np.sum(((xy[:, 1] - linear_func(xy[:, 0], a, b))/xy[:, 2])**2)
 
 
 def least_sq(xy):
@@ -49,3 +51,15 @@ def least_sq(xy):
     :param xy: Jak w chisquared, uwaga: sigma_y nie jest potrzebne.
     :return: Krotka
     """
+    N = xy.shape[0]
+    sx = np.sum(xy[:, 0])
+    sy = np.sum(xy[:, 1])
+    ssx = np.sum(xy[:, 0] ** 2)
+    s = np.sum(xy[:, 0] * xy[:, 1])
+
+    delta = N * ssx - sx ** 2
+
+    A = (ssx*sy - sx*s)/delta
+    B = (N*s - sx*sy)/delta
+
+    return A, B

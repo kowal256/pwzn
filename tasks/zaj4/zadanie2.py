@@ -29,6 +29,17 @@ def calculate_neighbours(board):
     Podpowiedź II: Proszę uważać na komówki na bokach i rogach planszy.
     """
 
+    def pad_zeros(vector, pad_width, iaxis, kwargs):
+        vector[:pad_width[0]] = 0
+        vector[-pad_width[1]:] = 0
+        return vector
+
+    padded = np.pad(board, 1, pad_zeros)
+
+    n = np.roll(padded, 1, 0) + 0 + np.roll(padded, -1, 0) + np.roll(padded, 1, 1) + np.roll(padded, -1, 1) + np.roll(np.roll(padded, 1, 0), 1, 1) + np.roll(np.roll(padded, 1, 0), -1, 1) + np.roll(np.roll(padded, -1, 0), 1, 1) + np.roll(np.roll(padded, -1, 0), -1, 1)
+
+    return n[1:board.shape[0]+1, 1:board.shape[1]+1]
+
 
 def iterate(board):
 
@@ -49,3 +60,9 @@ def iterate(board):
     oznacza to że dana komórka jest obsadzona
 
     """
+
+    neighbours = calculate_neighbours(board)
+
+    return np.logical_or(np.logical_and(board, np.logical_and(neighbours >= 2, neighbours <= 3)), np.logical_and(np.logical_not(board), neighbours == 3))
+
+

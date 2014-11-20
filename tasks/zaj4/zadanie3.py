@@ -68,6 +68,9 @@ class Integrator(object):
         """
         self.level = level
 
+        self.coefficients = self.PARAMS[level]
+        self.norm = level/sum(self.coefficients)
+
     def integrate(self, func, func_range, num_evaluations):
         """
 
@@ -77,6 +80,26 @@ class Integrator(object):
         :return:
         """
 
+        num_intervals = math.ceil(num_evaluations/self.level)
+        interval_len = (func_range[1] - func_range[0])/num_intervals
+        h = interval_len/(self.level-1)
+
+        x = np.reshape(np.linspace(func_range[0], func_range[1], num_evaluations, endpoint=False), (self.level, num_intervals))
+        x = np.pad(x, [(0, 0), (0, 1)], mode='constant')
+        x[num_intervals, self.level] = func_range[1]
+        x[num_intervals, 0:self.level-1] = x[1:num_intervals, 0:self.level-1]
+
+
+
+
+
+        # old code
+        num_intervals = math.ceil(num_evaluations/self.level)
+        interval_len = (func_range[1] - func_range[0])/num_intervals
+        intervals = [(func_range[0]+interval_len*inte, func_range[0]+interval_len*(inte+1)) for inte in range(0, num_intervals)]
+        h = interval_len/(self.level-1)
+
+        return sum([sum([h*c*func(interval[0]+nx*h) for nx, c in enumerate(self.coefficients)]) for interval in intervals])
 
 
 if __name__ == "__main__":
