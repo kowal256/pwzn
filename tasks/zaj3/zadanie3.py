@@ -4,11 +4,13 @@
 ################################################################################
 ### Kod pomocniczy od prowadzącego
 ################################################################################
+from collections import Counter
 
 import io
 import bz2
 import re
 from xml.dom.pulldom import parse, START_ELEMENT
+import csv
 
 link_re = re.compile("\[\[([^\[\]\|]+)(?:\|[^\]]+)?\]\]")
 
@@ -90,6 +92,14 @@ def generate_ngrams(contents, ngram_len=7):
 
     :return: Funkcja zwraca słownik n-gram -> ilość wystąpień
     """
+    c = Counter()
+
+    for article in contents:
+        for data in article:
+            for x in range(len(data)-ngram_len):
+                c[data[x:x+ngram_len]] += 1
+
+    return c
 
 
 def save_ngrams(out_file, contents):
@@ -103,3 +113,8 @@ def save_ngrams(out_file, contents):
     :param dict ngram_dict: Słownik z n-gramami
     :param str out_file: Plik do którego n-gramy zostaną zapisane
     """
+    with open(out_file, 'w') as file:
+        writer = csv.writer(file, dialect=csv.unix_dialect)
+
+        for ngram in sorted(contents.keys()):
+            writer.writerow([ngram, contents[ngram]])
