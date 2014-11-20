@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import csv
+from bisect import bisect_left, bisect_right
+from collections import Counter
+
 
 def load_data(path):
     """
@@ -18,6 +22,17 @@ def load_data(path):
     :return: Lista dwuelementowych krotek, pierwszym elementem jest ngram, drugim
     ilość wystąpień ngramu
     """
+
+    data = ([], [])
+
+    with open(path, 'r', encoding='utf-8') as file:
+        reader = csv.reader(file, dialect=csv.unix_dialect)
+
+        for e in reader:
+            data[0].append(e[0])
+            data[1].append(int(e[1]))
+
+    return data
 
 
 def suggester(input, data):
@@ -78,3 +93,18 @@ def suggester(input, data):
      ('e', 0.07352941176470588),
      ('i', 0.014705882352941176)]
     """
+
+    index = bisect_left(data[0], input)
+
+    c = Counter()
+
+    while data[0][index].startswith(input):
+        c[data[0][index][len(input)]] += data[1][index]
+        index += 1
+
+    count = sum(c.values())
+    p = [(k, v/count) for k, v in c.items()]
+
+    return sorted(p, key=lambda x: -x[1])
+
+
