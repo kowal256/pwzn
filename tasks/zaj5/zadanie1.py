@@ -2,6 +2,7 @@
 from numpy import char
 
 import numpy as np
+from collections import Counter
 
 def next_item(input):
     """
@@ -27,6 +28,8 @@ def load_data(path):
     Podpowiedźź: starczą dwie linikji kodu definicja dtype oraz otwarcie macierzy.
     Typ danych jest złożony --- należy użyć Structured Array.
     """
+    dtype = np.dtype([('ngram', np.dtype('a7')), ('count', np.uint32)])
+    return np.memmap(path, dtype=dtype, mode='r')
 
 
 def suggester(input, data):
@@ -65,3 +68,11 @@ def suggester(input, data):
      ('e', 0.07352941176470588),
      ('i', 0.014705882352941176)]
     """
+
+    l, r = np.searchsorted(data['ngram'], [input, next_item(input)])
+    counts = np.array(([d[1] for d in data[l:r]]))
+    chars = ([chr(d[-1]) for d in data['ngram'][l:r]])
+    counts = counts/np.sum(counts)
+
+    return [ zip(chars, counts)]
+
