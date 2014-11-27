@@ -69,7 +69,6 @@ class Integrator(object):
         self.level = level
 
         self.coefficients = self.PARAMS[level]
-        self.norm = level/sum(self.coefficients)
 
     def integrate(self, func, func_range, num_evaluations):
         """
@@ -84,22 +83,33 @@ class Integrator(object):
         interval_len = (func_range[1] - func_range[0])/num_intervals
         h = interval_len/(self.level-1)
 
-        x = np.reshape(np.linspace(func_range[0], func_range[1], num_evaluations, endpoint=False), (self.level, num_intervals))
+        spc = np.linspace(func_range[0], func_range[1], (self.level-1)*int(num_intervals), endpoint=False)
+        x = np.reshape(spc, (num_intervals, self.level-1))
+        print("before padding: {}".format(x))
+        print("l {}, i : {}".format(self.level, num_intervals))
         x = np.pad(x, [(0, 0), (0, 1)], mode='constant')
-        x[num_intervals, self.level] = func_range[1]
-        x[num_intervals, 0:self.level-1] = x[1:num_intervals, 0:self.level-1]
+        print("after: {}, shape: {}".format(x, x.shape))
+        x[num_intervals-1, self.level-1] = func_range[1]
+        x[0:num_intervals-1, self.level-1] = x[1:num_intervals, 0]
 
+        print("after kcgkwechk: {}".format(x))
 
+        f_v = np.vectorize(func)
+        coefficients = np.asanyarray(self.coefficients) # Wspolczynniki NC
+        res = (f_v(x) * coefficients) * (self.level-1)/sum(self.coefficients) *h
 
+        print("result: {}\n S: {}".format(res, np.sum(res)))
+
+        return np.sum(res)
 
 
         # old code
-        num_intervals = math.ceil(num_evaluations/self.level)
-        interval_len = (func_range[1] - func_range[0])/num_intervals
-        intervals = [(func_range[0]+interval_len*inte, func_range[0]+interval_len*(inte+1)) for inte in range(0, num_intervals)]
-        h = interval_len/(self.level-1)
+        #num_intervals = math.ceil(num_evaluations/self.level)
+        #interval_len = (func_range[1] - func_range[0])/num_intervals
+        #intervals = [(func_range[0]+interval_len*inte, func_range[0]+interval_len*(inte+1)) for inte in range(0, num_intervals)]
+        #h = interval_len/(self.level-1)
 
-        return sum([sum([h*c*func(interval[0]+nx*h) for nx, c in enumerate(self.coefficients)]) for interval in intervals])
+        #return sum([sum([h*c*func(interval[0]+nx*h) for nx, c in enumerate(self.coefficients)]) for interval in intervals])
 
 
 if __name__ == "__main__":
