@@ -75,5 +75,5 @@ def suggester(input, data):
     chars = ([chr(d[-1]) for d in data['ngram'][l:r]])
     counts = counts/np.sum(counts)
 
-    return [ zip(chars, counts)]
+    return sorted(zip(chars, counts), key=lambda x: -x[1])
 

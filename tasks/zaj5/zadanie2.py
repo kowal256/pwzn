@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import mmap
+import struct
+import numpy as np
+from os.path import getsize
+
 
 class InvalidFormatError(IOError):
     pass
@@ -63,3 +68,40 @@ def load_data(filename):
 
     W zadaniu 3 będziecie na tym pliku robić obliczenia.
     """
+
+    with open(filename, 'r') as f:
+        filesize = getsize(filename)
+
+        if filesize == 0:
+            raise InvalidFormatError('File {} is empty'.format(filename))
+
+        mm = mmap.mmap(f.fileno(), 0, prot=mmap.PROT_READ)
+
+        if mm[:16] != b'6o\xfdo\xe2\xa4C\x90\x98\xb2t!\xbeurn':
+            raise InvalidFormatError('Wrong magic number')
+
+        major, minor, struct_size, n, offset = struct.unpack_from('<HHHLL', mm, 16)
+
+        if major != 3:
+            raise InvalidFormatError('Wrong major version ({}) instead of 3'.format(major))
+
+        if filesize != (offset + n*struct_size):
+            raise InvalidFormatError('Wrong total file size: got {}, offset:{}, struct_size: {}, n: {}'.format(filesize, offset, struct_size, n))
+
+        mm.close()
+
+        padding = struct_size - (2+3*4+4+3*4)
+
+        if padding < 0:
+            raise InvalidFormatError('Wrong structure size (too small), got: {}, minimum: {}'.format(struct_size, (2+3*4+4+3*4)))
+
+        if (filesize - offset) % struct_size != 0:
+            raise InvalidFormatError('Size of available data ({}) is not a multiple of the data-type size {}'.format(filesize-offset, struct_size))
+
+        dtype = np.dtype([('event_id', np.uint16),
+                          ('particle_position', np.dtype('3float32')),
+                          ('particle_mass', np.float32),
+                          ('particle_velocity', np.dtype('3float32')),
+                          ('padding', np.dtype('{}int8'.format(padding)))])
+
+        return np.memmap(filename, dtype=dtype, mode='r', offset=offset)

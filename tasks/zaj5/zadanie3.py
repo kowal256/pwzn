@@ -20,6 +20,7 @@ def get_event_count(data):
     """
 
 
+
 def get_center_of_mass(event_id, data):
     """
     Zwraca macierz numpy zawierajacą położenie x, y i z środka masy układu.
