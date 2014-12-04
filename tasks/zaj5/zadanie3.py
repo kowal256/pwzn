@@ -46,6 +46,8 @@ def get_energy_spectrum(event_id, data, left, right, bins):
 
     Podpowiedż: np.histogram
     """
+    d = data[data['event_id'] == event_id]
+    return np.histogram(d['particle_mass'] * np.linalg.norm(d['particle_velocity'], axis=1)**2 / 2, range=(left, right), bins=bins)
 
 if __name__ == "__main__":
     data = load_data("...")
