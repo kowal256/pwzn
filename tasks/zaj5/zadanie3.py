@@ -19,6 +19,11 @@ def get_event_count(data):
     :param np.ndarray data: Wynik działania zadanie2.load_data
     """
 
+    # posortowane?
+    return data[-1]['event_id']
+
+    # albo nie
+    # return np.max(data['event_id'])
 
 
 def get_center_of_mass(event_id, data):
@@ -27,6 +32,7 @@ def get_center_of_mass(event_id, data):
     :param np.ndarray data: Wynik działania zadanie2.load_data
     :return: Macierz 3 x 1
     """
+    return np.average(data[data['event_id'] == event_id]['particle_position'], axis=0, weights=data[data['event_id'] == event_id]['particle_mass'])
 
 
 def get_energy_spectrum(event_id, data, left, right, bins):
