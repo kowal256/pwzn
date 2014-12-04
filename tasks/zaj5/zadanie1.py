@@ -2,6 +2,7 @@
 from numpy import char
 
 import numpy as np
+from collections import Counter
 
 def next_item(input):
     """
@@ -27,6 +28,8 @@ def load_data(path):
     Podpowiedźź: starczą dwie linikji kodu definicja dtype oraz otwarcie macierzy.
     Typ danych jest złożony --- należy użyć Structured Array.
     """
+    dtype = np.dtype([('ngram', np.dtype('a7')), ('count', np.uint32)])
+    return np.memmap(path, dtype=dtype, mode='r')
 
 
 def suggester(input, data):
@@ -40,7 +43,8 @@ def suggester(input, data):
     :return: Dowolną strukturę którą można zaindeksować w następującyc sposób:
             ret[0][0] zwraca najbardziej prawdopodobną nasßępną literę. ret[0][1]
             jej prawdopodobieństwo. ret[-1][0] zwraca najmniej prawdopodobną literę.
-            Dane posortowane są względem prawodpodobieństwa.
+            Dane posortowane są względem prawodpodobieństwa, dane o tym samym prawdopodbieństwie
+            są sortowane po kolei.
 
     By wygenerować częstotliwości należy:
 
@@ -65,3 +69,11 @@ def suggester(input, data):
      ('e', 0.07352941176470588),
      ('i', 0.014705882352941176)]
     """
+
+    l, r = np.searchsorted(data['ngram'], [input, next_item(input)])
+    counts = np.array(([d[1] for d in data[l:r]]))
+    chars = ([chr(d[-1]) for d in data['ngram'][l:r]])
+    counts = counts/np.sum(counts)
+
+    return sorted(zip(chars, counts), key=lambda x: -x[1])
+
